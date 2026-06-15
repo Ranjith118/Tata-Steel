@@ -7,7 +7,43 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.database import engine, Base
-from app.routers import equipment, maintenance_logs, sensor_data, failure_reports, spare_parts, upload, dashboard, rag, anomaly, prediction, rca, recommendation, procurement, decision_support, learning, doc_intelligence, ai_actions, operational_data, search, intelligence_hub, fine_tuning, alerts, agent
+
+# Import routers with fault tolerance — a single bad import won't crash the server
+_routers = []
+_failed_routers = []
+
+def _safe_import(module_path, attr="router"):
+    try:
+        import importlib
+        mod = importlib.import_module(module_path)
+        _routers.append(getattr(mod, attr))
+    except Exception as e:
+        _failed_routers.append((module_path, str(e)))
+        print(f"WARNING: Failed to import {module_path}: {e}")
+
+_safe_import("app.routers.equipment")
+_safe_import("app.routers.maintenance_logs")
+_safe_import("app.routers.sensor_data")
+_safe_import("app.routers.failure_reports")
+_safe_import("app.routers.spare_parts")
+_safe_import("app.routers.upload")
+_safe_import("app.routers.dashboard")
+_safe_import("app.routers.rag")
+_safe_import("app.routers.anomaly")
+_safe_import("app.routers.prediction")
+_safe_import("app.routers.rca")
+_safe_import("app.routers.recommendation")
+_safe_import("app.routers.procurement")
+_safe_import("app.routers.decision_support")
+_safe_import("app.routers.learning")
+_safe_import("app.routers.doc_intelligence")
+_safe_import("app.routers.ai_actions")
+_safe_import("app.routers.operational_data")
+_safe_import("app.routers.search")
+_safe_import("app.routers.intelligence_hub")
+_safe_import("app.routers.fine_tuning")
+_safe_import("app.routers.alerts")
+_safe_import("app.routers.agent")
 
 
 async def _background_startup():

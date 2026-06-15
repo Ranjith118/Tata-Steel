@@ -40,23 +40,20 @@ class ChromaVectorStore:
     """
     
     COLLECTION_NAME = "maintenance_knowledge_base"
-    DEFAULT_PERSIST_DIRECTORY = "./chroma_db"
-    
+    DEFAULT_PERSIST_DIRECTORY = None  # resolved from env at runtime
+
     def __init__(
         self,
         persist_directory: Optional[str] = None,
         collection_name: str = COLLECTION_NAME,
         embedding_service: Optional[Any] = None
     ):
-        """
-        Initialize the ChromaDB vector store.
-        
-        Args:
-            persist_directory: Directory to persist the database
-            collection_name: Name of the collection
-            embedding_service: Embedding service instance
-        """
-        self.persist_directory = persist_directory or self.DEFAULT_PERSIST_DIRECTORY
+        import os
+        self.persist_directory = (
+            persist_directory
+            or os.environ.get("CHROMA_DB_DIR")
+            or "/app/chroma_db"
+        )
         self.collection_name = collection_name
         
         # Create persist directory if it doesn't exist
