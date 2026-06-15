@@ -1,12 +1,8 @@
 """Maintenance Wizard - FastAPI Backend Application."""
-import os
-import pathlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.database import engine, Base
@@ -101,44 +97,12 @@ async def health_check():
     return {"status": "healthy"}
 
 
-@app.get("/api/info")
-async def api_info():
-    """API info endpoint."""
+@app.get("/")
+async def root():
+    """Root endpoint."""
     return {
         "name": settings.APP_NAME,
         "version": "9.0.0",
         "status": "running",
+        "docs": "/docs",
     }
-
-
-# ── Serve React SPA (must be last — catch-all) ──────────────────────────────
-# In production (Docker / HF Spaces) the pre-built React dist is copied to
-# /app/static.  In local dev this directory won't exist so we skip it.
-_STATIC_DIR = pathlib.Path("/app/static")
-if _STATIC_DIR.exists():
-    # Serve static assets (JS, CSS, images …)
-    app.mount("/assets", StaticFiles(directory=str(_STATIC_DIR / "assets")), name="assets")
-
-    # favicon and other root-level static files
-    @app.get("/favicon.svg", include_in_schema=False)
-    async def favicon():
-        return FileResponse(str(_STATIC_DIR / "favicon.svg"))
-
-    # React Router catch-all — every non-API path returns index.html
-    @app.get("/{full_path:path}", include_in_schema=False)
-    async def serve_spa(full_path: str):
-        index = _STATIC_DIR / "index.html"
-        if index.exists():
-            return FileResponse(str(index))
-        return {"error": "Frontend not found"}
-else:
-    # Local dev: simple root endpoint
-    @app.get("/")
-    async def root():
-        """Root endpoint (local dev)."""
-        return {
-            "name": settings.APP_NAME,
-            "version": "9.0.0",
-            "status": "running",
-            "docs": "/docs",
-        }

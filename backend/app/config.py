@@ -10,23 +10,23 @@ class Settings(BaseSettings):
     """Application settings with environment variable support."""
     
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:////app/data/maintenance_wizard.db")
-    
+    DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./maintenance_wizard.db")
+
     # Application
     APP_NAME: str = "Maintenance Wizard"
     APP_VERSION: str = "9.0.0"
     DEBUG: bool = False
-    
+
     # File Upload
     UPLOAD_DIR: Path = Path(os.getenv("UPLOAD_DIR", "/app/data"))
     MAX_FILE_SIZE: int = 50 * 1024 * 1024  # 50MB
-    
+
     # RAG Configuration
     CHROMA_DB_DIR: Path = Path(os.getenv("CHROMA_DB_DIR", "/app/chroma_db"))
     EMBEDDING_MODEL: str = "all-MiniLM-L6-v2"
     CHUNK_SIZE: int = 500
     CHUNK_OVERLAP: int = 50
-    
+
     # LLM Configuration
     LLM_PROVIDER: str = os.getenv("LLM_PROVIDER", "groq")
     LLM_MODEL: str = os.getenv("LLM_MODEL", "llama-3.3-70b-versatile")

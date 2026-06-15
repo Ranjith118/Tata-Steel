@@ -3,8 +3,6 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
-  // In production (HF Spaces) the React app is served from the same origin
-  // as the API, so no proxy is needed.  The proxy only applies during local dev.
   server: {
     port: 5173,
     proxy: {
@@ -16,7 +14,11 @@ export default defineConfig({
   },
   build: {
     outDir: 'dist',
-    // Ensure asset paths are relative so they work under any sub-path
     assetsDir: 'assets',
+  },
+  // Expose VITE_API_URL to the app at build time
+  // Set VITE_API_URL=https://your-backend.railway.app in Railway frontend env vars
+  define: {
+    __API_URL__: JSON.stringify(process.env.VITE_API_URL || ''),
   },
 })

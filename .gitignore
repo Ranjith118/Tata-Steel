@@ -5,7 +5,6 @@ __pycache__/
 *.pyd
 .Python
 *.egg-info/
-# Only ignore root-level dist/ and build/ (NOT frontend/dist which must be committed for Docker)
 /dist/
 /build/
 .eggs/
@@ -15,7 +14,6 @@ __pycache__/
 venv/
 env/
 .venv/
-.env/
 
 # Environment secrets — NEVER commit
 backend/.env
@@ -30,14 +28,14 @@ backend/*.db
 frontend/node_modules/
 node_modules/
 
-# Vite build output — keep committed so Docker can COPY it in
-# frontend/dist/  ← intentionally NOT ignored
+# Vite build output — NOT ignored (used by Docker build)
+# frontend/dist/ is intentionally committed
 
-# ChromaDB / vector store (persistent at runtime, not in repo)
+# ChromaDB / vector store
 backend/chroma_db/
 chroma_db/
 
-# ML model artifacts (large binary files)
+# ML model artifacts
 backend/models/*.pkl
 backend/models/*.joblib
 
@@ -49,7 +47,6 @@ data/
 .vscode/
 .idea/
 *.swp
-*.swo
 
 # OS
 .DS_Store
