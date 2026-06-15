@@ -1,8 +1,12 @@
 """Maintenance Wizard - FastAPI Backend Application."""
+import os
+import pathlib
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 
 from app.config import settings
 from app.database import engine, Base
@@ -91,77 +95,50 @@ app.include_router(alerts.router)
 app.include_router(agent.router)
 
 
-@app.get("/")
-async def root():
-    """Root endpoint."""
-    return {
-        "name": settings.APP_NAME,
-        "version": "9.0.0",
-        "status": "running",
-        "features": [
-            "Equipment Management",
-            "Maintenance Logs",
-            "RAG Chat",
-            "Document Processing",
-            "Anomaly Detection",
-            "Health Monitoring",
-            "Alert Engine",
-            "Failure Prediction",
-            "RUL Prediction",
-            "Risk Assessment",
-            "Root Cause Analysis",
-            "Maintenance Recommendations",
-            "Spare Parts & Procurement",
-            "Plant-Level Prioritization",
-            "Feedback Learning"
-        ]
-    }
-
-
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy"}
 
 
-# API documentation endpoints
-@app.get("/docs")
-async def docs():
-    """Redirect to API documentation."""
-    return {"message": "Visit /docs for Swagger UI documentation"}
+@app.get("/api/info")
+async def api_info():
+    """API info endpoint."""
+    return {
+        "name": settings.APP_NAME,
+        "version": "9.0.0",
+        "status": "running",
+    }
 
 
-@app.get("/redoc")
-async def redoc():
-    """Redirect to ReDoc documentation."""
-    return {"message": "Visit /redoc for ReDoc documentation"}
+# ── Serve React SPA (must be last — catch-all) ──────────────────────────────
+# In production (Docker / HF Spaces) the pre-built React dist is copied to
+# /app/static.  In local dev this directory won't exist so we skip it.
+_STATIC_DIR = pathlib.Path("/app/static")
+if _STATIC_DIR.exists():
+    # Serve static assets (JS, CSS, images …)
+    app.mount("/assets", StaticFiles(directory=str(_STATIC_DIR / "assets")), name="assets")
 
+    # favicon and other root-level static files
+    @app.get("/favicon.svg", include_in_schema=False)
+    async def favicon():
+        return FileResponse(str(_STATIC_DIR / "favicon.svg"))
 
-@app.get("/download")
-async def download_project():
-    """Download the complete project archive."""
-    import os
-    import pathlib
-    
-    # Find the archive file
-    possible_paths = [
-        pathlib.Path("/workspace/project/maintenance_wizard_all_phases.tar.gz"),
-        pathlib.Path("/workspace/project/frontend/dist/maintenance_wizard_all_phases.tar.gz"),
-    ]
-    
-    archive_path = None
-    for path in possible_paths:
-        if path.exists():
-            archive_path = path
-            break
-    
-    if not archive_path:
-        return {"error": "Archive not found. Please generate it first."}
-    
-    # Return file as streaming response
-    from fastapi.responses import FileResponse
-    return FileResponse(
-        path=archive_path,
-        filename="maintenance_wizard_all_phases.tar.gz",
-        media_type="application/gzip"
-    )
+    # React Router catch-all — every non-API path returns index.html
+    @app.get("/{full_path:path}", include_in_schema=False)
+    async def serve_spa(full_path: str):
+        index = _STATIC_DIR / "index.html"
+        if index.exists():
+            return FileResponse(str(index))
+        return {"error": "Frontend not found"}
+else:
+    # Local dev: simple root endpoint
+    @app.get("/")
+    async def root():
+        """Root endpoint (local dev)."""
+        return {
+            "name": settings.APP_NAME,
+            "version": "9.0.0",
+            "status": "running",
+            "docs": "/docs",
+        }

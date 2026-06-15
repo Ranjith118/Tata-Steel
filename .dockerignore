@@ -1,0 +1,50 @@
+# Don't copy these into the Docker image
+
+# Git history
+.git/
+.gitignore
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+
+# Node modules (not needed — we copy pre-built dist only)
+frontend/node_modules/
+frontend/src/
+frontend/public/
+frontend/*.config.*
+frontend/package*.json
+frontend/postcss.config.js
+frontend/tailwind.config.js
+frontend/index.html
+
+# Dev/test scripts
+backend/seed_*.py
+backend/test_*.py
+backend/check_*.py
+backend/debug_*.py
+backend/verify_*.py
+backend/final_*.py
+backend/run_*.py
+backend/index_*.py
+backend/inject_*.py
+backend/reindex_*.py
+backend/e2e_*.py
+backend/clear_*.py
+
+# Secrets
+backend/.env
+.env
+
+# DB and runtime data (created fresh in container)
+backend/*.db
+backend/chroma_db/
+backend/data/
+
+# README (already at root for HF)
+# README.md  ← keep this
+
+# IDE
+.vscode/
+.idea/
